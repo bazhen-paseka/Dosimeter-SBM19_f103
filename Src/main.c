@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -77,19 +78,10 @@ const unsigned long port_mask[] = {
 	1UL<<0x0F		/* 15 LED PC 15 */
  };
 
-int i = 0 ;
-	int p = 0 ;
-int u = 0 ;
-volatile int control= 0;
-int doza_01 = 0 ;
-int doza_10 = 0 ;
-int doza_general = 0;
-int doza[35];
-int d = 0;
-int doza_suma = 0;
-int divizion = 16;
-volatile uint8_t strobe_u8 = 0;
-uint8_t led_count_u8 = 0;
+	volatile uint32_t control= 0;
+	uint8_t led_count_u8 = 0;
+	#define DOZ_ARRAY	30
+	uint32_t doz_u32_arr[DOZ_ARRAY];
 
 /* USER CODE END 0 */
 
@@ -121,7 +113,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_TIM_Base_Start(&htim4);
 
   /* USER CODE END 2 */
 
@@ -129,9 +124,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (strobe_u8 > 0) {
-		  if (control > 99) control = 0;
-		  Indikator(control);
+	  if (control > 0) {
+		  for (int i=1; i < DOZ_ARRAY; i++) {
+			  doz_u32_arr[i-1] = doz_u32_arr[i];
+		  }
+		  doz_u32_arr[DOZ_ARRAY-1] = 60000/control;
+
+		  uint32_t res_doz_u32 = 0;
+		  for (int i=0; i<DOZ_ARRAY; i++) {
+			  res_doz_u32 = res_doz_u32 + doz_u32_arr[i];
+		  }
+		  Indikator(res_doz_u32/DOZ_ARRAY);
+
 		  switch (led_count_u8) {
 			  case 0: {
 				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	RESET);
@@ -139,7 +143,8 @@ int main(void)
 				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin, 	SET);
 			  } break;
 
-			  case 1: {
+			  case 1:
+			  case 3: {
 				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
 				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, RESET);
 				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin, 	SET);
@@ -149,12 +154,6 @@ int main(void)
 				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
 				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin,	SET);
 				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin,	RESET);
-			  }	  break;
-
-			  case 3: {
-				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
-				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin,	RESET);
-				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin,	SET);
 			  }	  break;
 
 			  default: {
@@ -167,27 +166,8 @@ int main(void)
 		  led_count_u8++;
 		  if (led_count_u8 > 3) led_count_u8 = 0;
 
-		  strobe_u8 = 0;
+		  control = 0;
 	  }
-
-
-//	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, RESET);
-//	  //HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, RESET);
-//	  HAL_Delay(300);
-//	  //HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, SET);
-//	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, SET);
-//
-//	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, RESET);
-//	  HAL_Delay(300);
-//	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, SET);
-//
-//	  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-//	  HAL_Delay(300);
-//	  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-//
-//	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, RESET);
-//	  HAL_Delay(300);
-//	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, SET);
 
     /* USER CODE END WHILE */
 
@@ -643,8 +623,8 @@ __INLINE static void Letter_2_F (void)
 
 void Indikator(uint32_t dozator)
 	{
-	doza_10 = dozator/10;
-	doza_01 = dozator-((doza_10)*10);
+	uint8_t doza_10 = dozator/10;
+	uint8_t doza_01 = dozator-((doza_10)*10);
 
 	if (doza_10==0) Letter_1_0();
 	if (doza_10==1) Letter_1_1();

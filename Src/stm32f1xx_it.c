@@ -43,8 +43,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
-	extern int control;
-	extern uint8_t strobe_u8;
+	extern uint32_t control;
 
 /* USER CODE END PV */
 
@@ -207,8 +206,8 @@ void EXTI1_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI1_IRQn 0 */
 
-		control++;
-	  strobe_u8++;
+		control = TIM4->CNT;
+		TIM4->CNT = 0;
 
   /* USER CODE END EXTI1_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
