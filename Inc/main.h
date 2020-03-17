@@ -66,6 +66,9 @@ void Error_Handler(void);
 #define LED_RED_GPIO_Port GPIOA
 #define BUZZER_Pin GPIO_PIN_7
 #define BUZZER_GPIO_Port GPIOA
+#define SBM19_Pin GPIO_PIN_1
+#define SBM19_GPIO_Port GPIOB
+#define SBM19_EXTI_IRQn EXTI1_IRQn
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

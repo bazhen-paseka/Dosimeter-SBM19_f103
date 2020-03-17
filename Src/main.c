@@ -80,7 +80,7 @@ const unsigned long port_mask[] = {
 int i = 0 ;
 	int p = 0 ;
 int u = 0 ;
-int control = 0 ;
+volatile int control= 0;
 int doza_01 = 0 ;
 int doza_10 = 0 ;
 int doza_general = 0;
@@ -127,26 +127,26 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  control++;
+
 	  Indikator(control);
 
-	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, RESET);
-	  //HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, RESET);
-	  HAL_Delay(300);
-	  //HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, SET);
-	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, SET);
-
-	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, RESET);
-	  HAL_Delay(300);
-	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, SET);
-
-	  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	  HAL_Delay(300);
-	  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-
-	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, RESET);
-	  HAL_Delay(300);
-	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, SET);
+//	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, RESET);
+//	  //HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, RESET);
+//	  HAL_Delay(300);
+//	  //HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, SET);
+//	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, SET);
+//
+//	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, RESET);
+//	  HAL_Delay(300);
+//	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, SET);
+//
+//	  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+//	  HAL_Delay(300);
+//	  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+//
+//	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, RESET);
+//	  HAL_Delay(300);
+//	  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, SET);
 
     /* USER CODE END WHILE */
 
