@@ -21,10 +21,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+	#include "stdio.h"
+	#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -114,9 +118,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM4_Init();
+  MX_USART1_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Base_Start(&htim4);
+
+  	  char DataChar[100];
+  	  sprintf(DataChar,"\r\n Dosimeter SBM19 2020-march-17 \r\nUART3 for debug on speed 115200\r\n\r\n");
+  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
 
   /* USER CODE END 2 */
 
@@ -128,6 +138,10 @@ int main(void)
 		  for (int i=1; i < DOZ_ARRAY; i++) {
 			  doz_u32_arr[i-1] = doz_u32_arr[i];
 		  }
+
+	  	  sprintf(DataChar,"%d \r\n", control);
+	  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
+
 		  doz_u32_arr[DOZ_ARRAY-1] = 60000/control;
 
 		  uint32_t res_doz_u32 = 0;
