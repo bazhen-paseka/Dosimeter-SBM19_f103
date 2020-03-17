@@ -82,10 +82,12 @@ const unsigned long port_mask[] = {
 	1UL<<0x0F		/* 15 LED PC 15 */
  };
 
-	#define DOZ_ARRAY	30
+	#define		DOZ_ARRAY	30
+	volatile 	uint8_t tim3_flag_u8 		= 0;
 	volatile 	uint32_t time_between_electrons_u32 		= 0;
 				uint8_t led_count_u8	= 0;
 				uint32_t doz_u32_arr[DOZ_ARRAY];
+				int		count_electrons_i = 0;
 
 /* USER CODE END 0 */
 
@@ -120,9 +122,12 @@ int main(void)
   MX_TIM4_Init();
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_TIM_Base_Start(&htim4);
+	  HAL_TIM_Base_Start(&htim3);
+	  HAL_TIM_Base_Start_IT(&htim3);
+	  HAL_TIM_Base_Start(&htim4);
 
   	  char DataChar[100];
   	  sprintf(DataChar,"\r\n Dosimeter SBM19 2020-march-17 \r\nUART3 for debug on speed 115200\r\n\r\n");
@@ -134,7 +139,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (tim3_flag_u8 == 1) {
+	  	  sprintf(DataChar,"\tTIM3 = 30Sec; %d\r\n", count_electrons_i);
+	  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+		  Indikator(count_electrons_i);
+
+	  	  count_electrons_i = 0;
+		  tim3_flag_u8 = 0;
+	  }
+
 	  if (time_between_electrons_u32 > 0) {
+
+		  count_electrons_i++;
 
 		  for (int i=0; i < DOZ_ARRAY-1; i++) {
 			  doz_u32_arr[i] = doz_u32_arr[i+1];
@@ -142,7 +159,7 @@ int main(void)
 
 		  doz_u32_arr[DOZ_ARRAY-1] = time_between_electrons_u32;
 
-	  	  sprintf(DataChar,"{%d} ", (int)doz_u32_arr[DOZ_ARRAY-1]);
+	  	  sprintf(DataChar,"%d) {%d} ", count_electrons_i, (int)doz_u32_arr[DOZ_ARRAY-1]);
 	  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
 
 		  uint32_t res_doz_u32 = 0;
@@ -155,7 +172,7 @@ int main(void)
 
 		  res_doz_u32 = ( 6000 * DOZ_ARRAY ) / res_doz_u32 ;
 
-		  Indikator(res_doz_u32);
+		  //Indikator(res_doz_u32);
 
 		  HAL_GPIO_WritePin(LED__GREEN_GPIO_Port,	LED__GREEN_Pin,	SET);
 		  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, SET);
