@@ -88,6 +88,8 @@ int doza[35];
 int d = 0;
 int doza_suma = 0;
 int divizion = 16;
+volatile uint8_t strobe_u8 = 0;
+uint8_t led_count_u8 = 0;
 
 /* USER CODE END 0 */
 
@@ -127,8 +129,47 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (strobe_u8 > 0) {
+		  if (control > 99) control = 0;
+		  Indikator(control);
+		  switch (led_count_u8) {
+			  case 0: {
+				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	RESET);
+				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, SET);
+				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin, 	SET);
+			  } break;
 
-	  Indikator(control);
+			  case 1: {
+				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
+				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, RESET);
+				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin, 	SET);
+			  } break;
+
+			  case 2: {
+				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
+				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin,	SET);
+				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin,	RESET);
+			  }	  break;
+
+			  case 3: {
+				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
+				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin,	RESET);
+				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin,	SET);
+			  }	  break;
+
+			  default: {
+				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
+				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, SET);
+				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin, 	SET);
+			  } break;
+		  }
+
+		  led_count_u8++;
+		  if (led_count_u8 > 3) led_count_u8 = 0;
+
+		  strobe_u8 = 0;
+	  }
+
 
 //	  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, RESET);
 //	  //HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, RESET);
