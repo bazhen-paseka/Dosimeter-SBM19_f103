@@ -43,7 +43,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
-	extern uint32_t control;
+	extern uint32_t time_between_electrons_u32;
 
 /* USER CODE END PV */
 
@@ -206,7 +206,7 @@ void EXTI1_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI1_IRQn 0 */
 
-		control = TIM4->CNT;
+		time_between_electrons_u32 = TIM4->CNT;
 		TIM4->CNT = 0;
 
   /* USER CODE END EXTI1_IRQn 0 */

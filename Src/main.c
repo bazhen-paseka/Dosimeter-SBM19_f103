@@ -82,10 +82,10 @@ const unsigned long port_mask[] = {
 	1UL<<0x0F		/* 15 LED PC 15 */
  };
 
-	volatile uint32_t control= 0;
-	uint8_t led_count_u8 = 0;
 	#define DOZ_ARRAY	30
-	uint32_t doz_u32_arr[DOZ_ARRAY];
+	volatile 	uint32_t time_between_electrons_u32 		= 0;
+				uint8_t led_count_u8	= 0;
+				uint32_t doz_u32_arr[DOZ_ARRAY];
 
 /* USER CODE END 0 */
 
@@ -134,53 +134,45 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (control > 0) {
-		  for (int i=1; i < DOZ_ARRAY; i++) {
-			  doz_u32_arr[i-1] = doz_u32_arr[i];
+	  if (time_between_electrons_u32 > 0) {
+
+		  for (int i=0; i < DOZ_ARRAY-1; i++) {
+			  doz_u32_arr[i] = doz_u32_arr[i+1];
 		  }
 
-	  	  sprintf(DataChar,"%d \r\n", control);
-	  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
+		  doz_u32_arr[DOZ_ARRAY-1] = time_between_electrons_u32;
 
-		  doz_u32_arr[DOZ_ARRAY-1] = 60000/control;
+	  	  sprintf(DataChar,"{%d} ", (int)doz_u32_arr[DOZ_ARRAY-1]);
+	  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
 
 		  uint32_t res_doz_u32 = 0;
 		  for (int i=0; i<DOZ_ARRAY; i++) {
 			  res_doz_u32 = res_doz_u32 + doz_u32_arr[i];
 		  }
-		  Indikator(res_doz_u32/DOZ_ARRAY);
+
+		  sprintf(DataChar,"Total=%d \r\n", (int)res_doz_u32);
+		  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+		  res_doz_u32 = ( 6000 * DOZ_ARRAY ) / res_doz_u32 ;
+
+		  Indikator(res_doz_u32);
+
+		  HAL_GPIO_WritePin(LED__GREEN_GPIO_Port,	LED__GREEN_Pin,	SET);
+		  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, SET);
+		  HAL_GPIO_WritePin(LED____RED_GPIO_Port,	LED____RED_Pin, SET);
 
 		  switch (led_count_u8) {
-			  case 0: {
-				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	RESET);
-				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, SET);
-				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin, 	SET);
-			  } break;
-
-			  case 1:
-			  case 3: {
-				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
-				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, RESET);
-				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin, 	SET);
-			  } break;
-
-			  case 2: {
-				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
-				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin,	SET);
-				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin,	RESET);
-			  }	  break;
-
-			  default: {
-				  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port,	LED_GREEN_Pin,	SET);
-				  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, SET);
-				  HAL_GPIO_WritePin(LED_RED_GPIO_Port,		LED_RED_Pin, 	SET);
-			  } break;
+			  case 0: HAL_GPIO_WritePin(LED__GREEN_GPIO_Port,	LED__GREEN_Pin,	RESET); break;
+			  case 1: HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, RESET); break;
+			  case 2: HAL_GPIO_WritePin(LED____RED_GPIO_Port,	LED____RED_Pin,	RESET);	break;
+			  case 3: HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port,	LED_YELLOW_Pin, RESET); break;
+			  default: break;
 		  }
 
 		  led_count_u8++;
 		  if (led_count_u8 > 3) led_count_u8 = 0;
 
-		  control = 0;
+		  time_between_electrons_u32 = 0;
 	  }
 
     /* USER CODE END WHILE */
