@@ -58,6 +58,35 @@ void SystemClock_Config(void);
 
 void Indikator(uint32_t dozator);
 
+void Letter_1_0 (void);
+void Letter_1_1 (void);
+void Letter_1_2 (void);
+void Letter_1_3 (void);
+void Letter_1_4 (void);
+void Letter_1_5 (void);
+void Letter_1_6 (void);
+void Letter_1_7 (void);
+void Letter_1_8 (void);
+void Letter_1_9 (void);
+void Letter_1_A (void);
+void Letter_1_B (void);
+void Letter_1_C (void);
+void Letter_1_D (void);
+void Letter_1_E (void);
+void Letter_1_F (void);
+
+void Letter_2_0 (void);
+void Letter_2_1 (void);
+void Letter_2_2 (void);
+void Letter_2_3 (void);
+void Letter_2_4 (void);
+void Letter_2_5 (void);
+void Letter_2_6 (void);
+void Letter_2_7 (void);
+void Letter_2_8 (void);
+void Letter_2_9 (void);
+void Letter_2_F (void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -82,10 +111,12 @@ const unsigned long port_mask[] = {
 	1UL<<0x0F		/* 15 LED PC 15 */
  };
 
-	#define DOZ_ARRAY	30
+	#define		DOZ_ARRAY	100
+	volatile 	uint8_t tim3_flag_u8 		= 0;
 	volatile 	uint32_t time_between_electrons_u32 		= 0;
 				uint8_t led_count_u8	= 0;
 				uint32_t doz_u32_arr[DOZ_ARRAY];
+				int		count_electrons_i = 0;
 
 /* USER CODE END 0 */
 
@@ -120,13 +151,23 @@ int main(void)
   MX_TIM4_Init();
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_TIM_Base_Start(&htim4);
+		HAL_TIM_Base_Start(&htim3);
+		HAL_TIM_Base_Start_IT(&htim3);
+		HAL_TIM_Base_Start(&htim4);
 
-  	  char DataChar[100];
-  	  sprintf(DataChar,"\r\n Dosimeter SBM19 2020-march-17 \r\nUART3 for debug on speed 115200\r\n\r\n");
-  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
+		char DataChar[100];
+		sprintf(DataChar,"\r\n Dosimeter SBM19 2020-march-17 \r\nUART3 for debug on speed 115200\r\n\r\n");
+		HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+		Letter_1_F();
+		Letter_2_F();
+
+		for (int i=0; i<DOZ_ARRAY; i++) {
+		  doz_u32_arr[i] = 1000;
+		}
 
   /* USER CODE END 2 */
 
@@ -134,7 +175,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (tim3_flag_u8 == 1) {
+	  	  sprintf(DataChar,"\t\t\t\tTIM3 60Sec. Hard_CNT= %d imp;\r\n", count_electrons_i);
+	  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
+	  	  count_electrons_i = 0;
+		  tim3_flag_u8 = 0;
+	  }
+
 	  if (time_between_electrons_u32 > 0) {
+
+		  count_electrons_i++;
 
 		  for (int i=0; i < DOZ_ARRAY-1; i++) {
 			  doz_u32_arr[i] = doz_u32_arr[i+1];
@@ -142,7 +192,7 @@ int main(void)
 
 		  doz_u32_arr[DOZ_ARRAY-1] = time_between_electrons_u32;
 
-	  	  sprintf(DataChar,"{%d} ", (int)doz_u32_arr[DOZ_ARRAY-1]);
+	  	  sprintf(DataChar,"%d) \t%04d", count_electrons_i, (int)doz_u32_arr[DOZ_ARRAY-1]);
 	  	  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
 
 		  uint32_t res_doz_u32 = 0;
@@ -150,10 +200,10 @@ int main(void)
 			  res_doz_u32 = res_doz_u32 + doz_u32_arr[i];
 		  }
 
-		  sprintf(DataChar,"Total=%d \r\n", (int)res_doz_u32);
+		  sprintf(DataChar,"\t%d \t CNT: %03d \r\n", (int)res_doz_u32, (int)(( 60000 * DOZ_ARRAY ) / res_doz_u32));
 		  HAL_UART_Transmit(&huart3, (uint8_t *)DataChar, strlen(DataChar), 100);
 
-		  res_doz_u32 = ( 6000 * DOZ_ARRAY ) / res_doz_u32 ;
+		  res_doz_u32 = ( 60000 * DOZ_ARRAY ) / res_doz_u32 ;
 
 		  Indikator(res_doz_u32);
 
@@ -199,7 +249,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL8;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -232,42 +282,36 @@ __INLINE static void Port_A_Off (uint32_t num)
 /*----------------------------------------------------------------------------
   Switch off
  *----------------------------------------------------------------------------*/
-__INLINE static void Port_A_On (uint32_t num)
-	{
+__INLINE static void Port_A_On (uint32_t num)	{
 	GPIOA->BSRR  = port_mask[num];                 /* Turn Off LED      */
 	}
-
 
 /*----------------------------------------------------------------------------
   Switch on B
  *----------------------------------------------------------------------------*/
-__INLINE static void Port_B_Off (uint32_t num)
-	{
+
+__INLINE static void Port_B_Off (uint32_t num)	{
 	GPIOB->BRR = port_mask[num];                 /* Turn On  LED          */
 	}
 
 /*----------------------------------------------------------------------------
   Switch off B
  *----------------------------------------------------------------------------*/
-__INLINE static void Port_B_On (uint32_t num)
-	{
+__INLINE static void Port_B_On (uint32_t num)	{
 	GPIOB->BSRR  = port_mask[num];                 /* Turn Off LED      */
 	}
-
 
 /*----------------------------------------------------------------------------
   Switch on C
  *----------------------------------------------------------------------------*/
-__INLINE static void Port_C_Off (uint32_t num)
-	{
+__INLINE static void Port_C_Off (uint32_t num)	{
 	GPIOC->BRR = port_mask[num];                 /* Turn On  LED          */
 	}
 
 /*----------------------------------------------------------------------------
   Switch off B
  *----------------------------------------------------------------------------*/
-__INLINE static void Port_C_On (uint32_t num)
-	{
+__INLINE static void Port_C_On (uint32_t num)	{
 	GPIOC->BSRR  = port_mask[num];                 /* Turn Off LED      */
 	}
 
@@ -275,8 +319,7 @@ __INLINE static void Port_C_On (uint32_t num)
 /*----------------------------------------------------------------------------
   Letter
  *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_0 (void)
-	{
+void Letter_1_0 (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -284,12 +327,9 @@ __INLINE static void Letter_1_0 (void)
 	Port_B_On  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_Off (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_1 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_1 (void)	{
 	Port_A_Off (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -297,12 +337,9 @@ __INLINE static void Letter_1_1 (void)
 	Port_B_Off (14);	//	e
 	Port_B_Off (13);	//	f
 	Port_B_Off (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_2 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_2 (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_Off ( 8);	//	c
@@ -310,12 +347,9 @@ __INLINE static void Letter_1_2 (void)
 	Port_B_On  (14);	//	e
 	Port_B_Off (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_3 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_3 (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -323,12 +357,9 @@ __INLINE static void Letter_1_3 (void)
 	Port_B_Off (14);	//	e
 	Port_B_Off (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_4 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_4 (void)	{
 	Port_A_Off (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -336,12 +367,9 @@ __INLINE static void Letter_1_4 (void)
 	Port_B_Off (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_5 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_5 (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_Off  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -349,12 +377,9 @@ __INLINE static void Letter_1_5 (void)
 	Port_B_Off  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_6 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_6 (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_Off  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -362,12 +387,9 @@ __INLINE static void Letter_1_6 (void)
 	Port_B_On  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_7 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_7 (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -375,12 +397,9 @@ __INLINE static void Letter_1_7 (void)
 	Port_B_Off  (14);	//	e
 	Port_B_Off  (13);	//	f
 	Port_B_Off  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_8 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_8 (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -388,12 +407,9 @@ __INLINE static void Letter_1_8 (void)
 	Port_B_On  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_9 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_9 (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -401,12 +417,9 @@ __INLINE static void Letter_1_9 (void)
 	Port_B_Off (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_A (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_A (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -414,12 +427,9 @@ __INLINE static void Letter_1_A (void)
 	Port_B_On  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_B (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_B (void)	{
 	Port_A_Off (12);	//	a
 	Port_A_Off (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -427,12 +437,9 @@ __INLINE static void Letter_1_B (void)
 	Port_B_On  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_C (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_C (void)	{
 	Port_A_On (12);	//	a
 	Port_A_Off (11);	//	b
 	Port_A_Off ( 8);	//	c
@@ -440,12 +447,9 @@ __INLINE static void Letter_1_C (void)
 	Port_B_On  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_Off  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_D (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_D (void)	{
 	Port_A_Off (12);	//	a
 	Port_A_On  (11);	//	b
 	Port_A_On  ( 8);	//	c
@@ -453,12 +457,9 @@ __INLINE static void Letter_1_D (void)
 	Port_B_On  (14);	//	e
 	Port_B_Off (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_E (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_E (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_Off (11);	//	b
 	Port_A_Off ( 8);	//	c
@@ -466,12 +467,9 @@ __INLINE static void Letter_1_E (void)
 	Port_B_On  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_1_F (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_1_F (void)	{
 	Port_A_On  (12);	//	a
 	Port_A_Off (11);	//	b
 	Port_A_Off ( 8);	//	c
@@ -479,13 +477,19 @@ __INLINE static void Letter_1_F (void)
 	Port_B_On  (14);	//	e
 	Port_B_On  (13);	//	f
 	Port_B_On  (12);	//	g
-	}
+} /*----------------------------------------------------------------------------*/
 
+void Letter_1_M (void)	{
+	Port_A_Off (12);	//	a
+	Port_A_Off (11);	//	b
+	Port_A_Off ( 8);	//	c
+	Port_B_Off (15);	//	d
+	Port_B_Off (14);	//	e
+	Port_B_Off (13);	//	f
+	Port_B_On  (12);	//	g
+} /*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_0 (void)
+void Letter_2_0 (void)
 	{
 	Port_C_On  (13);	// a
 	Port_B_On  ( 9);	// b
@@ -494,11 +498,9 @@ __INLINE static void Letter_2_0 (void)
 	Port_A_On  ( 1);	// e
 	Port_A_On  ( 2);	// f
 	Port_A_Off ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_1 (void)
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_1 (void)
 	{
 	Port_C_Off (13);	// a
 	Port_B_On  ( 9);	// b
@@ -507,11 +509,9 @@ __INLINE static void Letter_2_1 (void)
 	Port_A_Off ( 1);	// e
 	Port_A_Off ( 2);	// f
 	Port_A_Off ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_2 (void)
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_2 (void)
 	{
 	Port_C_On  (13);	// a
 	Port_B_On  ( 9);	// b
@@ -520,11 +520,9 @@ __INLINE static void Letter_2_2 (void)
 	Port_A_On  ( 1);	// e
 	Port_A_Off ( 2);	// f
 	Port_A_On  ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_3 (void)
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_3 (void)
 	{
 	Port_C_On  (13);	// a
 	Port_B_On  ( 9);	// b
@@ -533,11 +531,9 @@ __INLINE static void Letter_2_3 (void)
 	Port_A_Off ( 1);	// e
 	Port_A_Off ( 2);	// f
 	Port_A_On  ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_4 (void)
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_4 (void)
 	{
 	Port_C_Off  (13);	// a
 	Port_B_On   ( 9);	// b
@@ -546,11 +542,9 @@ __INLINE static void Letter_2_4 (void)
 	Port_A_Off  ( 1);	// e
 	Port_A_On   ( 2);	// f
 	Port_A_On   ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_5 (void)
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_5 (void)
 	{
 	Port_C_On  (13);	// a
 	Port_B_Off ( 9);	// b
@@ -559,12 +553,9 @@ __INLINE static void Letter_2_5 (void)
 	Port_A_Off ( 1);	// e
 	Port_A_On  ( 2);	// f
 	Port_A_On  ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_6 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_6 (void)	{
 	Port_C_On  (13);	// a
 	Port_B_Off ( 9);	// b
 	Port_B_On  ( 8);	// c
@@ -572,12 +563,9 @@ __INLINE static void Letter_2_6 (void)
 	Port_A_On  ( 1);	// e
 	Port_A_On  ( 2);	// f
 	Port_A_On  ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_7 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_7 (void)	{
 	Port_C_On  (13);	// a
 	Port_B_On  ( 9);	// b
 	Port_B_On  ( 8);	// c
@@ -586,11 +574,8 @@ __INLINE static void Letter_2_7 (void)
 	Port_A_Off ( 2);	// f
 	Port_A_Off ( 3);	// g
 	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_8 (void)
-	{
+
+void Letter_2_8 (void)	{
 	Port_C_On  (13);	// a
 	Port_B_On  ( 9);	// b
 	Port_B_On  ( 8);	// c
@@ -598,12 +583,9 @@ __INLINE static void Letter_2_8 (void)
 	Port_A_On  ( 1);	// e
 	Port_A_On  ( 2);	// f
 	Port_A_On  ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_9 (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_9 (void)	{
 	Port_C_On  (13);	// a
 	Port_B_On  ( 9);	// b
 	Port_B_On  ( 8);	// c
@@ -611,12 +593,9 @@ __INLINE static void Letter_2_9 (void)
 	Port_A_Off ( 1);	// e
 	Port_A_On  ( 2);	// f
 	Port_A_On  ( 3);	// g
-	}
-/*----------------------------------------------------------------------------
-  Letter
- *----------------------------------------------------------------------------*/
-__INLINE static void Letter_2_F (void)
-	{
+} /*----------------------------------------------------------------------------*/
+
+void Letter_2_F (void)	{
 	Port_C_On  (13);	// a
 	Port_B_Off ( 9);	// b
 	Port_B_Off ( 8);	// c
@@ -624,11 +603,9 @@ __INLINE static void Letter_2_F (void)
 	Port_A_On  ( 1);	// e
 	Port_A_On  ( 2);	// f
 	Port_A_On  ( 3);	// g
-	}
+} /*----------------------------------------------------------------------------*/
 
-
-void Indikator(uint32_t dozator)
-	{
+void Indikator(uint32_t dozator)	{
 	uint8_t doza_10 = dozator/10;
 	uint8_t doza_01 = dozator-((doza_10)*10);
 
@@ -648,6 +625,7 @@ void Indikator(uint32_t dozator)
 	if (doza_10==13) Letter_1_D();
 	if (doza_10==14) Letter_1_E();
 	if (doza_10==15) Letter_1_F();
+	if (doza_10 >15) Letter_1_M();
 
 	if (doza_01==0) Letter_2_0();
 	if (doza_01==1) Letter_2_1();
@@ -660,8 +638,7 @@ void Indikator(uint32_t dozator)
 	if (doza_01==8) Letter_2_8();
 	if (doza_01==9) Letter_2_9();
 	if (doza_01 >9) Letter_2_F();
-	}
-
+}
 
 /* USER CODE END 4 */
 
