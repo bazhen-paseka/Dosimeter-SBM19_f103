@@ -1,0 +1,3 @@
+[submodule "Drivers/dosimeter_sbm19_sm"]
+	path = Drivers/dosimeter_sbm19_sm
+	url = https://github.com/bazhen-paseka/dosimeter_sbm19_sm.git
