@@ -96,7 +96,7 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-	Dozimeter_sbm19_Init();
+	Dozimeter_Init();
 
   /* USER CODE END 2 */
 
@@ -104,7 +104,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		Dozimeter_sbm19_Main();
+		Dozimeter_Main();
 
     /* USER CODE END WHILE */
 
