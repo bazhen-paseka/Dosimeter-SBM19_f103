@@ -71,8 +71,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA1 PA2 PA3 PAPin
-                           PAPin PAPin PAPin PA8
+  /*Configure GPIO pins : PA1 PA2 PA3 LED__GREEN_Pin
+                           LED_YELLOW_Pin LED____RED_Pin BUZZER_Pin PA8
                            PA11 PA12 */
   GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|LED__GREEN_Pin
                           |LED_YELLOW_Pin|LED____RED_Pin|BUZZER_Pin|GPIO_PIN_8
@@ -82,7 +82,7 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
+  /*Configure GPIO pin : SBM19_Pin */
   GPIO_InitStruct.Pin = SBM19_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
