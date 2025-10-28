@@ -51,32 +51,33 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(D2_A_GPIO_Port, D2_A_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|BUZZER_Pin
-                          |GPIO_PIN_8|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, D2_E_Pin|D2_F_Pin|D2_G_Pin|BUZZER_Pin
+                          |D1_C_Pin|D1_B_Pin|D1_A_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LED__GREEN_Pin|LED_YELLOW_Pin|LED____RED_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15
-                          |GPIO_PIN_5|GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, D1_G_Pin|D1_F_Pin|D1_E_Pin|D1_D_Pin
+                          |D2_D_Pin|TM1637_CLK_Pin|TM1637_DIO_Pin|D2_C_Pin
+                          |D2_B_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  /*Configure GPIO pin : D2_A_Pin */
+  GPIO_InitStruct.Pin = D2_A_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(D2_A_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA1 PA2 PA3 LED__GREEN_Pin
-                           LED_YELLOW_Pin LED____RED_Pin BUZZER_Pin PA8
-                           PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|LED__GREEN_Pin
-                          |LED_YELLOW_Pin|LED____RED_Pin|BUZZER_Pin|GPIO_PIN_8
-                          |GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : D2_E_Pin D2_F_Pin D2_G_Pin LED__GREEN_Pin
+                           LED_YELLOW_Pin LED____RED_Pin BUZZER_Pin D1_C_Pin
+                           D1_B_Pin D1_A_Pin */
+  GPIO_InitStruct.Pin = D2_E_Pin|D2_F_Pin|D2_G_Pin|LED__GREEN_Pin
+                          |LED_YELLOW_Pin|LED____RED_Pin|BUZZER_Pin|D1_C_Pin
+                          |D1_B_Pin|D1_A_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -88,10 +89,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(SBM19_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB12 PB13 PB14 PB15
-                           PB5 PB8 PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15
-                          |GPIO_PIN_5|GPIO_PIN_8|GPIO_PIN_9;
+  /*Configure GPIO pins : D1_G_Pin D1_F_Pin D1_E_Pin D1_D_Pin
+                           D2_D_Pin TM1637_CLK_Pin TM1637_DIO_Pin D2_C_Pin
+                           D2_B_Pin */
+  GPIO_InitStruct.Pin = D1_G_Pin|D1_F_Pin|D1_E_Pin|D1_D_Pin
+                          |D2_D_Pin|TM1637_CLK_Pin|TM1637_DIO_Pin|D2_C_Pin
+                          |D2_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

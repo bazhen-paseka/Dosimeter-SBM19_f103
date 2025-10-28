@@ -15,5 +15,7 @@
 	#define 	TIM_BETWEEN				htim4
 	#define		START_RADIATION_VALUE	95
 	#define		VALUE_ARRAY_CNT			100
+	#define		HELP_DIVISION			5
+	#define		DISPLAY_TM1637
 
 #endif /* DOSIMETER_SBM19_F103_LOCAL_CONFIG_INCLUDED_H_ */
