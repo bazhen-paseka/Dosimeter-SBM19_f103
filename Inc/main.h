@@ -69,6 +69,7 @@ void Error_Handler(void);
 #define SBM19_Pin GPIO_PIN_1
 #define SBM19_GPIO_Port GPIOB
 #define SBM19_EXTI_IRQn EXTI1_IRQn
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
@@ -78,5 +79,3 @@ void Error_Handler(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

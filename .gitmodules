@@ -1,3 +1,6 @@
 [submodule "Drivers/dosimeter_sbm19_sm"]
 	path = Drivers/dosimeter_sbm19_sm
 	url = https://github.com/bazhen-paseka/dosimeter_sbm19_sm.git
+[submodule "Drivers/debug_gh"]
+	path = Drivers/debug_gh
+	url = git@gitlab.com:DriversSM/debug_gh.git
