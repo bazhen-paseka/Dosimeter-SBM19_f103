@@ -4,3 +4,6 @@
 [submodule "Drivers/debug_gh"]
 	path = Drivers/debug_gh
 	url = git@gitlab.com:DriversSM/debug_gh.git
+[submodule "Drivers/tm1637_sm"]
+	path = Drivers/tm1637_sm
+	url = git@github.com:bazhen-paseka/tm1637_sm.git
